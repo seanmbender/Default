@@ -14,6 +14,7 @@ public class Game {
 	private Random random;
 	private boolean finish;
 	private boolean dead;
+	private Board board;
 	
 	private Tile[][] tiles;
 	
@@ -22,10 +23,11 @@ public class Game {
 	private BufferedImage normal = ImageLoader.scale(ImageLoader.loadImage("fx/normal.png"), Tile.getWidth(), Tile.getHeight());
 	private BufferedImage pressed = ImageLoader.scale(ImageLoader.loadImage("fx/pressed.png"), Tile.getWidth(), Tile.getHeight());
 	
-	public Game()
+	public Game(Board board)
 	{
 		random = new Random();
 		tiles  = new Tile[width][height]; 
+		this.board = board;
 		
 		for(int x = 0; x < width; x++)
 		{
@@ -137,7 +139,7 @@ public class Game {
 			int my = tileY - 1;
 			int gy = tileY + 1;
 			
-			if((mx >= 0) && (gy >= 0) && tiles[mx][gy].isFlag()) numFlags++;
+			if((mx >= 0) && (gy < height) && tiles[mx][gy].isFlag()) numFlags++;
 			if((gy < height) && tiles[tileX][gy].isFlag()) numFlags++;
 			if((gx < width) && (gy < height) && tiles[gx][gy].isFlag()) numFlags++;
 			
@@ -238,6 +240,7 @@ public class Game {
 		finish = false;
 		placeBombs();
 		setProximity();
+		board.timerReset();
 	}
 	
 	private void checkFinish()
@@ -269,11 +272,13 @@ public class Game {
 		{
 			g.setColor(Color.RED);	
 			g.drawString("You Lost!", 30, 30);
+			board.stopTimer();
 		}
 		else if(finish)
 		{
 			g.setColor(Color.RED);
 			g.drawString("You Won!", 30, 30);
+			board.stopTimer();
 		}
 	}
 
