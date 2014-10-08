@@ -11,9 +11,12 @@ import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 
+import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.Timer;
 
@@ -23,16 +26,22 @@ public class Board extends JFrame implements MouseListener, KeyListener, ActionL
 	private static int width = 400;
 	private static int height = 450;
 	private Screen screen;
+	private JPanel topPanel;
+	private JPanel bomb;
 	private JPanel timer;
 	private Game game;
 	private Font font;
 	private JLabel [] timerDigits = new JLabel[3];
+	private JLabel [] bombDigits = new JLabel[2];
 	private ImageIcon [] timerIcons = new ImageIcon[10];
 	private Timer timerTimer;
 	private int timerHundreds, timerTens, timerOnes;
+	private int bombCounter;
 	
 	private int insetLeft;
 	private int insetTop;
+	
+	private boolean newGame;
 	
 	public Board()
 	{
@@ -45,10 +54,21 @@ public class Board extends JFrame implements MouseListener, KeyListener, ActionL
 		addMouseListener(this);
 		addKeyListener(this);
 		
+		topPanel = new JPanel();
+		topPanel.setPreferredSize(new Dimension(150,50));
+		topPanel.setLayout(new BoxLayout(topPanel, BoxLayout.X_AXIS));
+				
+		bomb = new JPanel();
+		bomb.setSize(new Dimension(30,50));
+		bomb.setLayout(new FlowLayout(FlowLayout.LEFT, 0, 5));
+		topPanel.add(bomb, -1);
+		topPanel.add(Box.createHorizontalGlue());
 		timer = new JPanel();
-		timer.setPreferredSize(new Dimension(30, 50));
+		timer.setSize(new Dimension(30, 50));
 		timer.setLayout(new FlowLayout(FlowLayout.RIGHT, 0, 5));
-		add(timer, BorderLayout.PAGE_START);
+		topPanel.add(timer, -1);
+		
+		add(topPanel, BorderLayout.PAGE_START);
 		
 		for (int i = 0; i < 10; i++){
 			timerIcons[i] = new ImageIcon(ImageLoader.scale(ImageLoader.loadImage("fx/" + i + ".png"), 26, 40));
@@ -56,7 +76,12 @@ public class Board extends JFrame implements MouseListener, KeyListener, ActionL
 		
 		for (int i = 0; i < 3; i++){
 			timerDigits[i] = new JLabel(timerIcons[0]);
-			timer.add(timerDigits[i]);
+			timer.add(timerDigits[i], -1);
+		}
+		
+		for (int i = 0; i < 2; i++){
+			bombDigits[i] = new JLabel(timerIcons[0]);
+			bomb.add(bombDigits[i]);
 		}
 		
 		timerTimer = new Timer(1000, this);
@@ -75,6 +100,7 @@ public class Board extends JFrame implements MouseListener, KeyListener, ActionL
 		setVisible(true);
 		
 		font = new Font("Arial",0,10);
+		game.reset();
 	}
 	
 	@Override
@@ -96,9 +122,10 @@ public class Board extends JFrame implements MouseListener, KeyListener, ActionL
 		if (deltaY < 0){return;}
 		if(e.getButton() == 1) {
 			game.clickedLeft(e.getX() - insetLeft, deltaY);
-			if (!timerTimer.isRunning()){
+			if ((!timerTimer.isRunning()) && (!newGame)){
 				timerTimer.restart();
 			}
+			newGame = false;
 		}
 		if(e.getButton() == 3) game.clickedRight(e.getX() - insetLeft, deltaY);
 		if(e.getButton() == 2) game.clickedMiddle(e.getX() - insetLeft, deltaY);
@@ -106,7 +133,8 @@ public class Board extends JFrame implements MouseListener, KeyListener, ActionL
 	}
 	
 	public void actionPerformed(ActionEvent e){
-		if (timerHundreds*100+timerTens*10+timerOnes > 999){
+		if (timerHundreds*100+timerTens*10+timerOnes == 999){
+			stopTimer();
 			return;
 		} else {
 			timerOnes = ++timerOnes % 10;
@@ -118,6 +146,33 @@ public class Board extends JFrame implements MouseListener, KeyListener, ActionL
 				}
 			}
 			setTimerValue();
+		}
+	}
+	
+	public int getBombCounter() {
+		return bombCounter;
+	}
+
+	public void setBombCounter(int bombCounter) {
+		this.bombCounter = bombCounter;
+	}
+
+	public void initBombCounter()
+	{	
+		bombDigits[0].setIcon(timerIcons[game.getBombCount()/10]);
+		bombDigits[1].setIcon(timerIcons[game.getBombCount()%10]);
+		setBombCounter(game.getBombCount());
+	}
+	
+	public void bombCounter(boolean add){
+		if (add){
+			setBombCounter(this.getBombCounter()-1);
+			bombDigits[0].setIcon(timerIcons[this.getBombCounter()/10]);
+			bombDigits[1].setIcon(timerIcons[this.getBombCounter()%10]);
+		} else {
+			setBombCounter(this.getBombCounter()+1);
+			bombDigits[0].setIcon(timerIcons[this.getBombCounter()/10]);
+			bombDigits[1].setIcon(timerIcons[this.getBombCounter()%10]);
 		}
 	}
 	
@@ -140,6 +195,40 @@ public class Board extends JFrame implements MouseListener, KeyListener, ActionL
 	
 	public void stopTimer(){
 		timerTimer.stop();
+	}
+	
+	public void lostDialog()
+	{
+		ImageIcon bombIcon = new ImageIcon(ImageLoader.scale(ImageLoader.loadImage("fx/bomb.png"), 32, 32));
+		int n = JOptionPane.showConfirmDialog(
+			    null,
+			    "YOU LOSE!\nPlay Again ?",
+			    "Game Over",
+			    JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE,
+                bombIcon);
+		if(n == JOptionPane.YES_OPTION)
+		{
+			game.reset();
+			newGame = true;
+		}
+		else System.exit(0);
+	}
+	
+	public void winDialog()
+	{
+		ImageIcon winIcon = new ImageIcon(ImageLoader.scale(ImageLoader.loadImage("fx/winner.png"), 32, 32));
+		int n = JOptionPane.showConfirmDialog(
+				null,
+			    "YOU WIN!\nPlay Again ?",
+			    "Game Over",
+			    JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE,
+                winIcon);
+		if(n == JOptionPane.YES_OPTION)
+		{
+			game.reset();
+			newGame = true;
+		}
+		else System.exit(0);
 	}
 
 	@Override

@@ -37,7 +37,7 @@ public class Game {
 			}
 		}
 		
-		reset();
+		//reset();
 		
 	}
 	
@@ -96,8 +96,7 @@ public class Game {
 			int tileY = y/height;
 			if(!tiles[tileX][tileY].isFlag())
 			{
-				tiles[tileX][tileY].setOpened(true);
-				
+				open(tileX, tileY);
 				if(tiles[tileX][tileY].isBomb())
 				{
 					dead = true;
@@ -109,7 +108,6 @@ public class Game {
 						open(tileX, tileY);
 					}
 				}
-				
 				checkFinish();
 			}
 		}
@@ -122,7 +120,13 @@ public class Game {
 			int tileX = x/width;
 			int tileY = y/height;
 			tiles[tileX][tileY].placeFlag();
+			if (tiles[tileX][tileY].isFlag() && !tiles[tileX][tileY].isOpened()){
+				board.bombCounter(true);
+			} else if (!tiles[tileX][tileY].isFlag() && !tiles[tileX][tileY].isOpened()){
+				board.bombCounter(false);
+			}
 		}
+		checkFinish();
 	}
 	
 	public void clickedMiddle(int x, int y)
@@ -195,13 +199,15 @@ public class Game {
 					if (tiles[gx][gy].isBomb()) dead = true;
 				}
 			}
-			checkFinish();
+			
 		}
+		checkFinish();
 	}
 	
 	private void open(int x, int y)
 	{
 		tiles[x][y].setOpened(true);
+		//openCount++;
 		if(tiles[x][y].getProximityCount() == 0)
 		{
 			int mx = x - 1;
@@ -241,6 +247,7 @@ public class Game {
 		placeBombs();
 		setProximity();
 		board.timerReset();
+		board.initBombCounter();
 	}
 	
 	private void checkFinish()
@@ -257,7 +264,9 @@ public class Game {
 				}
 			}
 		}
+		endDialog();
 	}
+	
 	
 	public void draw(Graphics g)
 	{
@@ -281,6 +290,30 @@ public class Game {
 			board.stopTimer();
 		}
 	}
+	
+	public void endDialog()
+	{
+		int count = 0;
+		for(int x = 0; x < width; x++)
+		{
+			for(int y = 0; y < height; y++)
+			{
+				if(tiles[x][y].isOpened())
+					count++;
+			}
+		}
+		
+		if(dead)
+		{
+			board.stopTimer();
+			board.lostDialog();
+		}
+		else if(AMOUNT_OF_BOMBS == ((width * height) - count))
+		{
+			board.stopTimer();
+			board.winDialog();
+		}
+	}
 
 	public static int getWidth() 
 	{
@@ -290,6 +323,11 @@ public class Game {
 	public static int getHeight()
 	{
 		return height;
+	}
+	
+	public int getBombCount()
+	{
+		return AMOUNT_OF_BOMBS;
 	}
 
 
