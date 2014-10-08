@@ -115,7 +115,7 @@ public class Game {
 	
 	public void clickedRight(int x, int y)
 	{
-		if(!dead && !finish)
+		if(!dead && !finish && board.getBombCounter() > 0)
 		{
 			int tileX = x/width;
 			int tileY = y/height;
@@ -124,6 +124,15 @@ public class Game {
 				board.bombCounter(true);
 			} else if (!tiles[tileX][tileY].isFlag() && !tiles[tileX][tileY].isOpened()){
 				board.bombCounter(false);
+			}
+		} else if (!dead && !finish && board.getBombCounter() == 0)
+		{
+			int tileX = x/width;
+			int tileY = y/height;
+			if (tiles[tileX][tileY].isFlag() && !tiles[tileX][tileY].isOpened())
+			{
+			tiles[tileX][tileY].placeFlag();
+			board.bombCounter(false);
 			}
 		}
 		checkFinish();

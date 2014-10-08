@@ -166,9 +166,11 @@ public class Board extends JFrame implements MouseListener, KeyListener, ActionL
 	
 	public void bombCounter(boolean add){
 		if (add){
+			if (this.getBombCounter() > 0){
 			setBombCounter(this.getBombCounter()-1);
 			bombDigits[0].setIcon(timerIcons[this.getBombCounter()/10]);
 			bombDigits[1].setIcon(timerIcons[this.getBombCounter()%10]);
+			}
 		} else {
 			setBombCounter(this.getBombCounter()+1);
 			bombDigits[0].setIcon(timerIcons[this.getBombCounter()/10]);
