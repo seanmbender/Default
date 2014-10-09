@@ -24,7 +24,7 @@ public class Board extends JFrame implements MouseListener, KeyListener, ActionL
 	
 	private static final long serialVersionUID = 1L;
 	private static int width = 400;
-	private static int height = 450;
+	private static int height = 400;
 	private Screen screen;
 	private JPanel topPanel;
 	private JPanel bomb;
@@ -91,11 +91,10 @@ public class Board extends JFrame implements MouseListener, KeyListener, ActionL
 			
 		screen = new Screen();
 		add(screen, BorderLayout.CENTER);
-		
 		pack();
 		insetLeft = getInsets().left;
 		insetTop  = getInsets().top;
-		setSize(width + insetLeft + getInsets().right, height + getInsets().bottom + insetTop);
+		setSize(width + insetLeft + getInsets().right, height + getInsets().bottom + insetTop + 50);
 		setLocationRelativeTo(null);
 		setVisible(true);
 		
@@ -221,7 +220,7 @@ public class Board extends JFrame implements MouseListener, KeyListener, ActionL
 		ImageIcon winIcon = new ImageIcon(ImageLoader.scale(ImageLoader.loadImage("fx/winner.png"), 32, 32));
 		int n = JOptionPane.showConfirmDialog(
 				null,
-			    "YOU WIN!\nPlay Again ?",
+			    "YOU WIN!\nScore: " + getScore() + "\nPlay Again ?",
 			    "Game Over",
 			    JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE,
                 winIcon);
@@ -232,6 +231,20 @@ public class Board extends JFrame implements MouseListener, KeyListener, ActionL
 		}
 		else System.exit(0);
 	}
+	
+	private String getScore ()
+	{
+		String total = "";
+		if(timerHundreds > 0)
+			total = timerHundreds + "" + timerTens + "" + timerOnes;
+		if(timerHundreds == 0 && timerTens > 0)
+			total = timerTens + "" + timerOnes;
+		if(timerHundreds == 0 && timerTens == 0)
+			total = timerOnes + "";
+		
+		return total;
+	}
+
 
 	@Override
 	public void mouseEntered(MouseEvent e) 

@@ -20,7 +20,7 @@ public class Tile {
 	private int proximityCount;
 	
 	private static int width  = Board.getScreenWidth() / Game.getWidth();
-	private static int height  = Board.getScreenWidth() / Game.getHeight();
+	private static int height  = Board.getScreenHeight() / Game.getHeight();
 	
 	public Tile(int x, int y, BufferedImage n, BufferedImage b, BufferedImage o, BufferedImage f)
 	{

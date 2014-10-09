@@ -35,10 +35,7 @@ public class Game {
 			{
 				tiles[x][y] = new Tile(x, y, normal, bomb, pressed, flag);
 			}
-		}
-		
-		//reset();
-		
+		}		
 	}
 	
 	private void placeBombs()
@@ -92,8 +89,8 @@ public class Game {
 	{
 		if(!dead && !finish)
 		{
-			int tileX = x/width;
-			int tileY = y/height;
+			int tileX = x/(width);
+			int tileY = y/(height);
 			if(!tiles[tileX][tileY].isFlag())
 			{
 				open(tileX, tileY);
@@ -216,7 +213,6 @@ public class Game {
 	private void open(int x, int y)
 	{
 		tiles[x][y].setOpened(true);
-		//openCount++;
 		if(tiles[x][y].getProximityCount() == 0)
 		{
 			int mx = x - 1;
@@ -234,11 +230,6 @@ public class Game {
 			if((gx < width) && (my >= 0) && (tiles[gx][my].canOpen())) open(gx, my);
 			if((gx < width) && (tiles[gx][y].canOpen())) open(gx, y);
 			if((gx < width) && (gy < height) && (tiles[gx][gy].canOpen())) open(gx, gy);
-			
-			//if((mx >= 0) && (tiles[mx][y].canOpen()) ) open(mx, y);
-			//if((gx < width) && (tiles[gx][y].canOpen()) ) open(gx, y);
-			//if((my >= 0) && (tiles[x][my].canOpen()) ) open(x, my);
-			//if((gy < height) && (tiles[x][gy].canOpen()) ) open(x, gy);
 		}
 	}
 	
