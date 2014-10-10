@@ -43,6 +43,7 @@ public class Board extends JFrame implements MouseListener, KeyListener, ActionL
 	
 	private boolean newGame;
 	
+	//The main panel holding the various components making up the game board
 	public Board()
 	{
 		super("MineSweeper");
@@ -54,10 +55,12 @@ public class Board extends JFrame implements MouseListener, KeyListener, ActionL
 		addMouseListener(this);
 		addKeyListener(this);
 		
+		//The panel at the top of the window holding the timer and bomb counter
 		topPanel = new JPanel();
 		topPanel.setPreferredSize(new Dimension(150,50));
 		topPanel.setLayout(new BoxLayout(topPanel, BoxLayout.X_AXIS));
-				
+		
+		//Construct the bomb counter and timer locations
 		bomb = new JPanel();
 		bomb.setSize(new Dimension(30,50));
 		bomb.setLayout(new FlowLayout(FlowLayout.LEFT, 0, 5));
@@ -70,6 +73,7 @@ public class Board extends JFrame implements MouseListener, KeyListener, ActionL
 		
 		add(topPanel, BorderLayout.PAGE_START);
 		
+		//Load images used by the bomb counter and timer displays
 		for (int i = 0; i < 10; i++){
 			timerIcons[i] = new ImageIcon(ImageLoader.scale(ImageLoader.loadImage("fx/" + i + ".png"), 26, 40));
 		}
@@ -84,6 +88,7 @@ public class Board extends JFrame implements MouseListener, KeyListener, ActionL
 			bomb.add(bombDigits[i]);
 		}
 		
+		//Build the timer and specify variables used to track the individual digits
 		timerTimer = new Timer(1000, this);
 		timerHundreds = 0;
 		timerTens = 0;
@@ -91,6 +96,7 @@ public class Board extends JFrame implements MouseListener, KeyListener, ActionL
 			
 		screen = new Screen();
 		add(screen, BorderLayout.CENTER);
+		
 		pack();
 		insetLeft = getInsets().left;
 		insetTop  = getInsets().top;
@@ -115,6 +121,7 @@ public class Board extends JFrame implements MouseListener, KeyListener, ActionL
 	}
 
 	@Override
+	//Send mouse click events to Game for handling
 	public void mouseReleased(MouseEvent e) 
 	{
 		int deltaY = e.getY() - screen.getY() - insetTop;
@@ -131,6 +138,7 @@ public class Board extends JFrame implements MouseListener, KeyListener, ActionL
 		screen.repaint();
 	}
 	
+	//Run the timer
 	public void actionPerformed(ActionEvent e){
 		if (timerHundreds*100+timerTens*10+timerOnes == 999){
 			stopTimer();
@@ -163,6 +171,7 @@ public class Board extends JFrame implements MouseListener, KeyListener, ActionL
 		setBombCounter(game.getBombCount());
 	}
 	
+	//This method increments or decrements the bomb counter. Logic for its use is contained at the location of the call
 	public void bombCounter(boolean add){
 		if (add){
 			if (this.getBombCounter() > 0){
@@ -198,6 +207,7 @@ public class Board extends JFrame implements MouseListener, KeyListener, ActionL
 		timerTimer.stop();
 	}
 	
+	
 	public void lostDialog()
 	{
 		ImageIcon bombIcon = new ImageIcon(ImageLoader.scale(ImageLoader.loadImage("fx/bomb.png"), 32, 32));
@@ -232,7 +242,9 @@ public class Board extends JFrame implements MouseListener, KeyListener, ActionL
 		else System.exit(0);
 	}
 	
-	private String getScore ()
+	
+	//Build the score from the timer components
+	public String getScore ()
 	{
 		String total = "";
 		if(timerHundreds > 0)
@@ -244,7 +256,8 @@ public class Board extends JFrame implements MouseListener, KeyListener, ActionL
 		
 		return total;
 	}
-
+	
+	
 
 	@Override
 	public void mouseEntered(MouseEvent e) 
@@ -270,7 +283,6 @@ public class Board extends JFrame implements MouseListener, KeyListener, ActionL
 		}
 	}
 	
-	
 	public static int getScreenWidth()
 	{
 		return width;
@@ -294,6 +306,7 @@ public class Board extends JFrame implements MouseListener, KeyListener, ActionL
 	}
 
 	@Override
+	//Alternate method to reset the board
 	public void keyReleased(KeyEvent e) 
 	{
 		if(e.getKeyCode() == KeyEvent.VK_ENTER)
@@ -302,6 +315,22 @@ public class Board extends JFrame implements MouseListener, KeyListener, ActionL
 			screen.repaint();
 		}
 	}
+
+	public void setWidth(int i) {
+		Board.width = i;
+	}
+
+	public void setHeight(int i) {
+		Board.height = i;
+	}
+
+	public void setNewGame(boolean b) {
+		this.newGame = true;
+	}
 	
+	public void setPanelSize(int i, int j)
+	{
+		topPanel.setPreferredSize(new Dimension(i,j));
+	}
 }
 

@@ -19,8 +19,9 @@ public class Tile {
 	
 	private int proximityCount;
 	
+	//Set size of individual tiles
 	private static int width  = Board.getScreenWidth() / Game.getWidth();
-	private static int height  = Board.getScreenHeight() / Game.getHeight();
+	private static int height  = Board.getScreenWidth() / Game.getHeight();
 	
 	public Tile(int x, int y, BufferedImage n, BufferedImage b, BufferedImage o, BufferedImage f)
 	{
@@ -98,6 +99,7 @@ public class Tile {
 		bomb   = false;
 	}
 	
+	//Logic to handle what appears in each tile location during gameplay
 	public void draw(Graphics g)
 	{
 		if(!opened) 

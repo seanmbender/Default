@@ -1,15 +1,18 @@
 package mineSweeper;
-import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 import java.util.Random;
 
+import javax.swing.ImageIcon;
+import javax.swing.JOptionPane;
+
 public class Game {
 	
+	//Set the size of the tiles used on the game board
 	private static int width = 20;
 	private static int height = 20;
 	
-	private final int AMOUNT_OF_BOMBS = 40;
+	private static int AMOUNT_OF_BOMBS = 20;
 	
 	private Random random;
 	private boolean finish;
@@ -18,10 +21,14 @@ public class Game {
 	
 	private Tile[][] tiles;
 	
+	//Load images used to render the gameboard pieces
 	private BufferedImage bomb = ImageLoader.scale(ImageLoader.loadImage("fx/bomb.png"), Tile.getWidth(), Tile.getHeight());
 	private BufferedImage flag = ImageLoader.scale(ImageLoader.loadImage("fx/flag.png"), Tile.getWidth(), Tile.getHeight());
 	private BufferedImage normal = ImageLoader.scale(ImageLoader.loadImage("fx/normal.png"), Tile.getWidth(), Tile.getHeight());
 	private BufferedImage pressed = ImageLoader.scale(ImageLoader.loadImage("fx/pressed.png"), Tile.getWidth(), Tile.getHeight());
+	
+	//Used to scale the coordinate system properly for different difficulties
+	private double coorOffset;
 	
 	public Game(Board board)
 	{
@@ -29,13 +36,16 @@ public class Game {
 		tiles  = new Tile[width][height]; 
 		this.board = board;
 		
+		//Load the board
 		for(int x = 0; x < width; x++)
 		{
 			for(int y = 0; y < height; y++)
 			{
 				tiles[x][y] = new Tile(x, y, normal, bomb, pressed, flag);
 			}
-		}		
+		}
+		//Prompt user for difficulty level of this play session
+		this.startMenu();
 	}
 	
 	private void placeBombs()
@@ -56,6 +66,7 @@ public class Game {
 		
 	}
 	
+	//This method loads the tiles with the number of bombs adjacent to that tile
 	private void setProximity()
 	{
 		for(int x = 0; x < width; x++)
@@ -85,12 +96,13 @@ public class Game {
 		}
 	}
 	
+	//The event handler for left-mouse-click
 	public void clickedLeft(int x, int y)
 	{
 		if(!dead && !finish)
 		{
-			int tileX = x/(width);
-			int tileY = y/(height);
+			int tileX = (int) (x/(width * coorOffset));
+			int tileY = (int) (y/(height * coorOffset));
 			if(!tiles[tileX][tileY].isFlag())
 			{
 				open(tileX, tileY);
@@ -110,12 +122,13 @@ public class Game {
 		}
 	}
 	
+	//The event handler for right-mouse-click
 	public void clickedRight(int x, int y)
 	{
 		if(!dead && !finish && board.getBombCounter() > 0)
 		{
-			int tileX = x/width;
-			int tileY = y/height;
+			int tileX = (int) (x/(width * coorOffset));
+			int tileY = (int) (y/(height * coorOffset));
 			tiles[tileX][tileY].placeFlag();
 			if (tiles[tileX][tileY].isFlag() && !tiles[tileX][tileY].isOpened()){
 				board.bombCounter(true);
@@ -124,8 +137,8 @@ public class Game {
 			}
 		} else if (!dead && !finish && board.getBombCounter() == 0)
 		{
-			int tileX = x/width;
-			int tileY = y/height;
+			int tileX = (int) (x/(width * coorOffset));
+			int tileY = (int) (y/(height * coorOffset));
 			if (tiles[tileX][tileY].isFlag() && !tiles[tileX][tileY].isOpened())
 			{
 			tiles[tileX][tileY].placeFlag();
@@ -135,14 +148,15 @@ public class Game {
 		checkFinish();
 	}
 	
+	//The event handler for middle-mouse-click. This method calls the open method on tiles adjacent to the tile clicked after checking to ensure they are inside the screen boundary
 	public void clickedMiddle(int x, int y)
 	{
 		int numFlags = 0;
 		
 		if(!dead && !finish)
 		{
-			int tileX = x/width;
-			int tileY = y/height;
+			int tileX = (int) (x/(width * coorOffset));
+			int tileY = (int) (y/(height * coorOffset));
 			
 			int mx = tileX - 1;
 			int gx = tileX + 1;
@@ -210,6 +224,7 @@ public class Game {
 		checkFinish();
 	}
 	
+	//The method called by other methods in order to show a closed tile
 	private void open(int x, int y)
 	{
 		tiles[x][y].setOpened(true);
@@ -233,6 +248,7 @@ public class Game {
 		}
 	}
 	
+	//Resets the board after the game finishes
 	public void reset()
 	{
 		for(int x = 0; x < width; x++)
@@ -250,6 +266,7 @@ public class Game {
 		board.initBombCounter();
 	}
 	
+	//Used to verify the board condition during the game
 	private void checkFinish()
 	{
 		finish = true;
@@ -277,20 +294,9 @@ public class Game {
 				tiles[x][y].draw(g);
 			}
 		}
-		if(dead)
-		{
-			g.setColor(Color.RED);	
-			g.drawString("You Lost!", 30, 30);
-			board.stopTimer();
-		}
-		else if(finish)
-		{
-			g.setColor(Color.RED);
-			g.drawString("You Won!", 30, 30);
-			board.stopTimer();
-		}
 	}
 	
+	//Logic for deciding which menu to display when the game ends
 	public void endDialog()
 	{
 		int count = 0;
@@ -306,13 +312,77 @@ public class Game {
 		if(dead)
 		{
 			board.stopTimer();
-			board.lostDialog();
+			ImageIcon bombIcon = new ImageIcon(ImageLoader.scale(ImageLoader.loadImage("fx/bomb.png"), 32, 32));
+			int n = JOptionPane.showConfirmDialog(
+				    null,
+				    "YOU LOSE!\nPlay Again ?",
+				    "MineSweeper",
+				    JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE,
+	                bombIcon);
+			if(n == JOptionPane.YES_OPTION)
+			{
+				this.reset();
+				board.setNewGame(true);
+			}
+			else System.exit(0);
 		}
 		else if(AMOUNT_OF_BOMBS == ((width * height) - count))
 		{
 			board.stopTimer();
-			board.winDialog();
+			board.stopTimer();
+			ImageIcon bombIcon = new ImageIcon(ImageLoader.scale(ImageLoader.loadImage("fx/bomb.png"), 32, 32));
+			int n = JOptionPane.showConfirmDialog(
+				    null,
+				    "YOU Win!\nScore: " + board.getScore() + "\nPlay Again ?",
+				    "MineSweeper",
+				    JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE,
+	                bombIcon);
+			if(n == JOptionPane.YES_OPTION)
+			{
+				board.setNewGame(true);
+				this.reset();
+				
+			}
+			else System.exit(0);
 		}
+	}
+	
+	//Allows for selection of difficulty level when the game starts
+	public void startMenu()
+	{
+		String[] options = new String[] {"Expert", "Intermediate", "Beginner"};
+	    int level = JOptionPane.showOptionDialog(null, "Select Level", "MineSweeper",
+	        JOptionPane.DEFAULT_OPTION, JOptionPane.PLAIN_MESSAGE,
+	        null, options, options[0]);
+	    //This logic loads the appropriate variable values according to the difficulty, starting with most difficult
+	    if(level == 0)
+	    {
+	    	width = 20;
+	    	height = 20;
+	    	AMOUNT_OF_BOMBS = 65;
+	    	board.setWidth(400);
+	    	board.setHeight(400);
+	    	this.setCoorOffset(1);
+	    	this.reset();
+	    }
+	    else if(level == 1)
+	    {
+	    	width = 16;
+	    	height = 16;
+	    	AMOUNT_OF_BOMBS = 40;
+	    	board.setWidth(320);
+	    	board.setHeight(320);
+	    	this.setCoorOffset(1.25003);
+	    }
+	    else
+	    {
+	    	width = 9;
+	    	height = 9;
+	    	AMOUNT_OF_BOMBS = 10;
+	    	board.setWidth(180);
+	    	board.setHeight(180);
+	    	this.setCoorOffset(2.1553);
+	    }
 	}
 
 	public static int getWidth() 
@@ -330,6 +400,15 @@ public class Game {
 		return AMOUNT_OF_BOMBS;
 	}
 
+	public double getCoorOffset() 
+	{
+		return coorOffset;
+	}
+
+	public void setCoorOffset(double coorOffset) 
+	{
+		this.coorOffset = coorOffset;
+	}
+
 
 }
-
